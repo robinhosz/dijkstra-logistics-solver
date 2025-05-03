@@ -4,6 +4,10 @@ import random
 import tracemalloc
 from collections import defaultdict
 
+__author__ = "Equipe A3 Estrutura de Dados (Depois colocar o numero do grupo)"
+__version__ = "1.0.0"
+__license__ = "MIT"
+
 # 1. Função para gerar dados de teste completos
 def gerar_dados(num_entregas, num_caminhoes):
     """
@@ -35,7 +39,7 @@ def gerar_dados(num_entregas, num_caminhoes):
     return entregas, caminhoes
 
 # 2. Função para gerar o grafo de distâncias
-def gerar_grafo_distancias(centros, destinos):
+def gerar_grafo_distancias_Grande(centros, destinos):
     """
     Cria um grafo de distâncias entre centros de distribuição e destinos.
     
@@ -62,6 +66,36 @@ def gerar_grafo_distancias(centros, destinos):
             grafo[destino][centro] = grafo[centro][destino]
     
     return grafo
+
+def gerar_grafo_distancias_Pequeno(centros, destinos):
+    """
+    Cria um grafo de distâncias entre centros de distribuição e destinos.
+    
+    Args:
+        centros: Lista de centros de distribuição
+        destinos: Lista de destinos de entrega
+        
+    Returns:
+        Dict: Grafo representado como dicionário de dicionários
+    """
+    grafo = {}
+    
+    # Distâncias dos centros para os destinos
+    for centro in centros:
+        grafo[centro] = {}
+        for destino in destinos:
+            # Distância aleatória entre 30 e 200 km
+            grafo[centro][destino] = random.randint(30, 200)
+    
+    # Distâncias dos destinos para os centros (simétricas)
+    for destino in destinos:
+        grafo[destino] = {}
+        for centro in centros:
+            grafo[destino][centro] = grafo[centro][destino]
+    
+    return grafo
+
+
 
 # 3. Função para gerar matriz de adjacência
 def gerar_matriz_adjacencia(nos, distancias):
@@ -427,15 +461,21 @@ def medir_desempenho(entregas, caminhoes, grafo, algoritmo_dijkstra, nome_algori
     print(f"  - Entregas alocadas: {entregas_alocadas}/{len(entregas)}")
     print(f"  - Caminhões utilizados: {len(alocacoes)}/{len(caminhoes)}")
 
-# 9. Função principal para execução do programa
-def main():
+    
+    
+def Testepequeno():
+
+    print(f"\n===================")
+    print(f"===Teste Pequeno===")
+    print(f"===================")
+    
     # Configuração inicial
     random.seed(42)  # Para resultados reproduzíveis
     centros_distribuicao = ['Belém', 'Recife', 'Brasília', 'São Paulo', 'Florianópolis']
     
     # Gerar dados de teste
-    num_entregas = 30
-    num_caminhoes = 10
+    num_entregas = 10 #ALTERA AQUI PRA MUDAR O TAMANHO DO TESTE DEFAULT 30
+    num_caminhoes = 2 # DEFAULT 10
     entregas, caminhoes = gerar_dados(num_entregas, num_caminhoes)
     destinos = [entrega['destino'] for entrega in entregas]
     
@@ -445,7 +485,7 @@ def main():
     print(f"Total de caminhões: {num_caminhoes}")
     
     # Gerar estruturas de dados
-    grafo_distancias = gerar_grafo_distancias(centros_distribuicao, destinos)
+    grafo_distancias = gerar_grafo_distancias_Pequeno(centros_distribuicao, destinos)
     nos = centros_distribuicao + destinos
     matriz_adjacencia = gerar_matriz_adjacencia(nos, grafo_distancias)
     
@@ -466,6 +506,55 @@ def main():
     medir_desempenho(entregas, caminhoes, grafo_distancias, dijkstra_lista, "Lista Simples")
     medir_desempenho(entregas, caminhoes, grafo_distancias, dijkstra_heap, "Heap")
     medir_desempenho(entregas, caminhoes, matriz_adjacencia, dijkstra_matriz, "Matriz", nos)
+    
 
-if __name__ == "__main__":
-    main()
+def TesteGrande():
+    print(f"\n==================")
+    print(f"===Teste Grande===")
+    print(f"==================")
+        
+    # Configuração inicial
+    random.seed(42)  # Para resultados reproduzíveis
+    centros_distribuicao = ['Belém', 'Recife', 'Brasília', 'São Paulo', 'Florianópolis']
+    
+    # Gerar dados de teste
+    num_entregas = 30 #ALTERA AQUI PRA MUDAR O TAMANHO DO TESTE DEFAULT 30
+    num_caminhoes = 10 # DEFAULT 10
+    entregas, caminhoes = gerar_dados(num_entregas, num_caminhoes)
+    destinos = [entrega['destino'] for entrega in entregas]
+    
+    print(f"\n=== CONFIGURAÇÃO INICIAL ===")
+    print(f"Centros de distribuição: {', '.join(centros_distribuicao)}")
+    print(f"Total de entregas: {num_entregas}")
+    print(f"Total de caminhões: {num_caminhoes}")
+    
+    # Gerar estruturas de dados
+    grafo_distancias = gerar_grafo_distancias_Grande(centros_distribuicao, destinos)
+    nos = centros_distribuicao + destinos
+    matriz_adjacencia = gerar_matriz_adjacencia(nos, grafo_distancias)
+    
+    # Testar com lista de adjacência
+    print("\n=== TESTE COM LISTA DE ADJACÊNCIA ===")
+    alocacoes_lista = alocar_caminhoes_otimizado(entregas, caminhoes, grafo_distancias)
+    exibir_alocacoes(alocacoes_lista)
+    medir_desempenho(entregas, caminhoes, grafo_distancias, dijkstra_heap, "Lista de Adjacência")
+    
+    # Testar com matriz de adjacência
+    print("\n=== TESTE COM MATRIZ DE ADJACÊNCIA ===")
+    alocacoes_matriz = alocar_caminhoes_otimizado(entregas, caminhoes, matriz_adjacencia, nos)
+    exibir_alocacoes(alocacoes_matriz)
+    medir_desempenho(entregas, caminhoes, matriz_adjacencia, dijkstra_matriz, "Matriz de Adjacência", nos)
+    
+    # Comparação de desempenho entre algoritmos Dijkstra
+    print("\n=== COMPARAÇÃO DE ALGORITMOS DIJKSTRA ===")
+    medir_desempenho(entregas, caminhoes, grafo_distancias, dijkstra_lista, "Lista Simples")
+    medir_desempenho(entregas, caminhoes, grafo_distancias, dijkstra_heap, "Heap")
+    medir_desempenho(entregas, caminhoes, matriz_adjacencia, dijkstra_matriz, "Matriz", nos)
+    
+    
+    
+# 9. Função principal para execução do programa
+
+Testepequeno();
+
+TesteGrande();
